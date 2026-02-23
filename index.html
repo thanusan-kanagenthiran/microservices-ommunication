@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microservices Communication — Complete Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080b10;
+  --bg2: #0d1117;
+  --panel: #111827;
+  --panel2: #161f2e;
+  --border: #1f2d42;
+  --border2: #243447;
+
+  --blue: #38bdf8;
+  --blue-dim: rgba(56,189,248,0.12);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.12);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.12);
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.12);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.12);
+  --pink: #f472b6;
+  --pink-dim: rgba(244,114,182,0.12);
+  --cyan: #22d3ee;
+
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #475569;
+
+  --mono: 'IBM Plex Mono', monospace;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.6;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,11,16,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto;
+}
+nav a {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  text-decoration: none;
+  padding: 14px 18px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+nav a:hover { color: var(--blue); border-color: var(--blue); }
+nav .nav-brand {
+  font-family: var(--display);
+  font-size: 18px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  padding: 12px 20px 12px 0;
+  border-right: 1px solid var(--border);
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+/* MAIN LAYOUT */
+main {
+  position: relative; z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* HERO */
+.hero {
+  padding: 64px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 56px;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block; width: 32px; height: 1px;
+  background: var(--blue);
+}
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(56px, 8vw, 100px);
+  line-height: 0.95;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.hero h1 em { color: var(--blue); font-style: normal; }
+.hero-sub {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+  max-width: 600px;
+  line-height: 1.8;
+}
+.hero-stats {
+  display: flex; gap: 32px; flex-wrap: wrap;
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.stat {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-num {
+  font-family: var(--display);
+  font-size: 36px;
+  color: var(--blue);
+  line-height: 1;
+}
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* SECTION HEADERS */
+.section-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 28px;
+}
+.section-num {
+  font-family: var(--display);
+  font-size: 56px;
+  color: var(--border2);
+  line-height: 1;
+  min-width: 52px;
+}
+.section-info {}
+.section-title {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.section-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+}
+
+section {
+  margin-bottom: 72px;
+  scroll-margin-top: 60px;
+}
+
+/* CARDS */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 24px;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+
+.card-tag {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+.tag-sync   { background: var(--blue-dim);   color: var(--blue); }
+.tag-async  { background: var(--orange-dim); color: var(--orange); }
+.tag-event  { background: var(--purple-dim); color: var(--purple); }
+.tag-infra  { background: var(--yellow-dim); color: var(--yellow); }
+.tag-res    { background: var(--red-dim);    color: var(--red); }
+.tag-disco  { background: var(--green-dim);  color: var(--green); }
+.tag-sec    { background: var(--pink-dim);   color: var(--pink); }
+.tag-obs    { background: rgba(34,211,238,0.12); color: var(--cyan); }
+
+.card-title {
+  font-size: 15px; font-weight: 600;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.8;
+}
+
+/* ARCHITECTURE SVG DIAGRAM */
+.arch-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 32px 24px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+/* Animated flow diagram */
+.flow-diagram {
+  width: 100%;
+  min-width: 900px;
+  height: 420px;
+  position: relative;
+}
+
+.fnode {
+  position: absolute;
+  border-radius: 4px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  cursor: default;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.fnode:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 24px rgba(0,0,0,0.6);
+  z-index: 10;
+}
+.fnode .fn-icon { font-size: 24px; }
+.fnode .fn-name {
+  font-family: var(--mono);
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.fnode .fn-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  opacity: 0.6;
+}
+
+/* Pulse dot */
+.fnode::after {
+  content: '';
+  position: absolute;
+  top: 7px; right: 7px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pulse-1::after { animation: pulse 2.0s ease-in-out infinite; }
+.pulse-2::after { animation: pulse 2.3s ease-in-out infinite 0.3s; }
+.pulse-3::after { animation: pulse 1.8s ease-in-out infinite 0.7s; }
+.pulse-4::after { animation: pulse 2.5s ease-in-out infinite 0.5s; }
+.pulse-5::after { animation: pulse 2.1s ease-in-out infinite 1.0s; }
+.pulse-6::after { animation: pulse 1.9s ease-in-out infinite 0.2s; }
+.pulse-7::after { animation: pulse 2.4s ease-in-out infinite 0.9s; }
+.pulse-8::after { animation: pulse 2.2s ease-in-out infinite 0.4s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(0.5); }
+}
+
+svg.connections {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+/* node colors */
+.n-client   { background: var(--blue-dim);   border-color: var(--blue);   color: var(--blue);   width: 100px; height: 80px; }
+.n-gateway  { background: var(--yellow-dim); border-color: var(--yellow); color: var(--yellow); width: 110px; height: 80px; }
+.n-mesh     { background: rgba(100,116,139,0.1); border-color: #475569; color: #94a3b8; width: 110px; height: 80px; }
+.n-svc      { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); width: 100px; height: 80px; }
+.n-broker   { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); width: 110px; height: 80px; }
+.n-db       { background: var(--green-dim);  border-color: var(--green);  color: var(--green);  width: 90px;  height: 80px; }
+.n-cache    { background: var(--red-dim);    border-color: var(--red);    color: var(--red);    width: 90px;  height: 80px; }
+.n-disco    { background: rgba(34,211,238,0.1); border-color: var(--cyan); color: var(--cyan); width: 100px; height: 80px; }
+
+/* ARROW LINES */
+.conn-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--text3);
+}
+.packet {
+  animation: travel-path 3s linear infinite;
+}
+@keyframes travel-path {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+/* COMPARISON TABLE */
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.comp-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.comp-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(31,45,66,0.5);
+  vertical-align: top;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.comp-table td:first-child {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.comp-table tr:last-child td { border-bottom: none; }
+.comp-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.good { color: var(--green); }
+.bad  { color: var(--red); }
+.mid  { color: var(--yellow); }
+
+/* TIMELINE / VERTICAL STEPS */
+.steps {
+  position: relative;
+  padding-left: 32px;
+}
+.steps::before {
+  content: '';
+  position: absolute;
+  left: 10px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--blue), var(--purple), var(--orange));
+}
+.step {
+  position: relative;
+  margin-bottom: 24px;
+}
+.step::before {
+  content: '';
+  position: absolute;
+  left: -26px; top: 6px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--blue);
+}
+.step-num {
+  font-family: var(--mono);
+  font-size: 9px; color: var(--text3);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.step-title {
+  font-weight: 600; font-size: 13px;
+  margin-bottom: 4px;
+}
+.step-body {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* CODE BLOCKS */
+.code-block {
+  background: #0a0f18;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.8;
+  overflow-x: auto;
+  margin-top: 12px;
+}
+.code-block .kw { color: var(--purple); }
+.code-block .str { color: var(--green); }
+.code-block .cmt { color: var(--text3); font-style: italic; }
+.code-block .num { color: var(--orange); }
+.code-block .fn  { color: var(--blue); }
+
+/* METRIC BARS */
+.metric-bar-wrap { margin-bottom: 14px; }
+.metric-label {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+.metric-bar {
+  height: 5px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.metric-fill {
+  height: 100%;
+  border-radius: 2px;
+  animation: fillBar 1.2s ease both;
+}
+@keyframes fillBar {
+  from { width: 0; }
+}
+
+/* PATTERN FLOW ILLUSTRATION */
+.pattern-flow {
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto;
+  padding: 20px 0;
+}
+.pf-node {
+  flex-shrink: 0;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-align: center;
+  min-width: 90px;
+  position: relative;
+}
+.pf-node .pf-icon { font-size: 18px; margin-bottom: 4px; }
+.pf-node .pf-name { color: var(--text); font-weight: 500; }
+.pf-node .pf-role { color: var(--text3); font-size: 8px; margin-top: 2px; }
+
+.pf-arrow {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+}
+.pf-line {
+  height: 2px; width: 50px;
+  position: relative;
+  overflow: visible;
+}
+.pf-line.solid  { background: var(--blue); }
+.pf-line.dashed { background: repeating-linear-gradient(90deg, var(--orange) 0, var(--orange) 5px, transparent 5px, transparent 9px); }
+.pf-line.dotted { background: repeating-linear-gradient(90deg, var(--purple) 0, var(--purple) 2px, transparent 2px, transparent 6px); }
+
+.pf-packet {
+  position: absolute;
+  top: -4px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  animation: pf-travel 2s linear infinite;
+}
+.pf-line.solid  .pf-packet { background: var(--blue);   box-shadow: 0 0 8px var(--blue); }
+.pf-line.dashed .pf-packet { background: var(--orange); box-shadow: 0 0 8px var(--orange); animation-delay: 0.5s; }
+.pf-line.dotted .pf-packet { background: var(--purple); box-shadow: 0 0 8px var(--purple); animation-delay: 1s; }
+
+@keyframes pf-travel {
+  0%   { left: 0;     opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: calc(100% - 10px); opacity: 0; }
+}
+
+.pf-arrow-head {
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+.pf-arrow-head.solid  { border-left: 7px solid var(--blue); }
+.pf-arrow-head.dashed { border-left: 7px solid var(--orange); }
+.pf-arrow-head.dotted { border-left: 7px solid var(--purple); }
+
+.pf-type {
+  font-family: var(--mono);
+  font-size: 8px; color: var(--text3);
+  white-space: nowrap;
+}
+
+/* RESILIENCE CIRCUIT VISUAL */
+.circuit-states {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.circuit-state {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 14px;
+  text-align: center;
+}
+.circuit-state .cs-name {
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.circuit-state .cs-icon { font-size: 28px; margin-bottom: 8px; }
+.circuit-state .cs-desc {
+  font-family: var(--mono);
+  font-size: 9px; color: var(--text3);
+  line-height: 1.6;
+}
+
+/* SAGA DIAGRAM */
+.saga-wrap {
+  overflow-x: auto;
+  padding: 8px 0;
+}
+.saga-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 700px;
+}
+.saga-step {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px;
+  gap: 0;
+  align-items: center;
+  min-height: 60px;
+}
+.saga-svc {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  text-align: center;
+  font-weight: 500;
+}
+.saga-event-wrap {
+  display: flex; align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+}
+.saga-arrow {
+  flex: 1;
+  height: 2px;
+  position: relative;
+}
+.saga-arrow.fwd { background: var(--green); }
+.saga-arrow.comp { background: var(--red); }
+.saga-arrow.fwd::after, .saga-arrow.comp::after {
+  content: '';
+  position: absolute;
+  right: -1px; top: -4px;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+.saga-arrow.fwd::after  { border-left: 7px solid var(--green); }
+.saga-arrow.comp::after { border-left: 7px solid var(--red); }
+.saga-event {
+  font-family: var(--mono);
+  font-size: 9px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.saga-connector {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+}
+.saga-vline {
+  width: 1px; height: 20px;
+  background: var(--border);
+}
+
+/* TOOLTIP */
+[data-tip] {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dashed var(--text3);
+}
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 100;
+}
+[data-tip]:hover::after { opacity: 1; }
+
+/* DISCOVERY DIAGRAM */
+.disco-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* SERVICE MESH DIAGRAM */
+.mesh-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.mesh-svc {
+  position: relative;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  padding: 14px;
+  text-align: center;
+  margin: 6px;
+  border-radius: 2px;
+}
+.mesh-svc .ms-name {
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 500;
+}
+.mesh-svc .ms-proxy {
+  position: absolute;
+  bottom: -14px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 8px;
+  background: var(--yellow-dim);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* DECISION FLOWCHART */
+.decision-tree {
+  padding: 24px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.decision-q {
+  background: rgba(56,189,248,0.1);
+  border: 1px solid var(--blue);
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 13px; font-weight: 500;
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative;
+}
+.decision-q::after {
+  content: '';
+  position: absolute;
+  bottom: -14px; left: 50%;
+  transform: translateX(-50%);
+  width: 1px; height: 14px;
+  background: var(--border2);
+}
+.decision-branches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.decision-branch {
+  border-left: 2px solid var(--border2);
+  padding-left: 12px;
+}
+.db-label {
+  font-family: var(--mono);
+  font-size: 9px; color: var(--text3);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.decision-answer {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+/* BFF DIAGRAM */
+.bff-wrap {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+}
+.bff-clients { display: flex; flex-direction: column; gap: 10px; }
+.bff-client {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 80px;
+}
+.bff-gateways { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.bff-gateway {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 8px 14px;
+  border-radius: 2px;
+  border: 1px solid;
+  text-align: center;
+  min-width: 100px;
+}
+.bff-services { display: flex; flex-direction: column; gap: 10px; }
+.bff-svc {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--purple-dim);
+  border: 1px solid var(--purple);
+  color: var(--purple);
+  border-radius: 2px;
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 100px;
+}
+
+/* OBSERVABILITY STACK */
+.obs-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.obs-layer {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px 16px;
+}
+.obs-icon { font-size: 20px; min-width: 28px; }
+.obs-name {
+  font-weight: 500; font-size: 13px;
+  min-width: 120px;
+}
+.obs-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.obs-tools {
+  margin-left: auto;
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.obs-tool {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  padding: 2px 7px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+/* SECTION DIVIDER */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 56px 0;
+}
+
+/* ACCORDION */
+.acc-item {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.acc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  background: var(--panel);
+  transition: background 0.2s;
+  user-select: none;
+}
+.acc-head:hover { background: var(--panel2); }
+.acc-head-left { display: flex; align-items: center; gap: 12px; }
+.acc-title { font-weight: 500; font-size: 13px; }
+.acc-icon { font-size: 18px; }
+.acc-toggle {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--text3);
+  transition: transform 0.3s;
+}
+.acc-item.open .acc-toggle { transform: rotate(45deg); }
+.acc-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  background: var(--panel2);
+}
+.acc-item.open .acc-body { max-height: 2000px; }
+.acc-content {
+  padding: 20px 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.8;
+  border-top: 1px solid var(--border);
+}
+
+/* TWO COL DETAIL */
+.detail-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 700px) {
+  .detail-2col { grid-template-columns: 1fr; }
+  .disco-grid  { grid-template-columns: 1fr; }
+}
+
+/* HIGHLIGHT BOX */
+.highlight-box {
+  background: linear-gradient(135deg, var(--blue-dim), transparent);
+  border: 1px solid rgba(56,189,248,0.3);
+  border-radius: 2px;
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+.highlight-box.orange { background: linear-gradient(135deg, var(--orange-dim), transparent); border-color: rgba(251,146,60,0.3); }
+.highlight-box.purple { background: linear-gradient(135deg, var(--purple-dim), transparent); border-color: rgba(167,139,250,0.3); }
+.highlight-box.green  { background: linear-gradient(135deg, var(--green-dim), transparent); border-color: rgba(52,211,153,0.3); }
+
+.hb-title {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+.highlight-box.orange .hb-title { color: var(--orange); }
+.highlight-box.purple .hb-title { color: var(--purple); }
+.highlight-box.green  .hb-title { color: var(--green); }
+.hb-body {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.8;
+}
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate { animation: fadeInUp 0.5s ease both; }
+
+/* STICKY SECTION LABEL */
+.sticky-label {
+  position: sticky; top: 48px; z-index: 50;
+  background: rgba(8,11,16,0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  margin-bottom: 24px;
+}
+.sticky-label-text {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* SCROLL INDICATOR */
+.scroll-hint {
+  font-family: var(--mono);
+  font-size: 9px; color: var(--text3);
+  letter-spacing: 1px;
+  margin-top: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.scroll-hint::before {
+  content: '→';
+  animation: blink 1.5s infinite;
+}
+@keyframes blink { 50% { opacity: 0.2; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">ΜSVC</div>
+  <a href="#overview">Overview</a>
+  <a href="#sync">Synchronous</a>
+  <a href="#async">Asynchronous</a>
+  <a href="#patterns">Patterns</a>
+  <a href="#saga">Saga</a>
+  <a href="#discovery">Discovery</a>
+  <a href="#resilience">Resilience</a>
+  <a href="#mesh">Service Mesh</a>
+  <a href="#gateway">API Gateway</a>
+  <a href="#observability">Observability</a>
+  <a href="#security">Security</a>
+  <a href="#decision">Decision Guide</a>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<div class="hero" id="overview">
+  <div class="hero-eyebrow">Complete Architecture Reference</div>
+  <h1>MICROSERVICES<br><em>COMMUNICATION</em></h1>
+  <div class="hero-sub">
+    Every pattern, protocol, and practice for connecting distributed services —
+    from REST and gRPC to Kafka, Sagas, Service Mesh, and beyond.
+    A comprehensive visual guide for architects and engineers.
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">12</div><div class="stat-label">Major Topics</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Comm Protocols</div></div>
+    <div class="stat"><div class="stat-num">8</div><div class="stat-label">Resilience Patterns</div></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-label">Messaging Models</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. MASTER ARCHITECTURE DIAGRAM -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="architecture">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-info">
+      <div class="section-title">MASTER ARCHITECTURE</div>
+      <div class="section-sub">End-to-end system topology with all communication layers</div>
+    </div>
+  </div>
+
+  <div class="arch-wrap">
+    <div class="scroll-hint">Scroll horizontally to see full diagram</div>
+    <div class="flow-diagram" style="height:480px;">
+
+      <!-- SVG Connections -->
+      <svg class="connections" viewBox="0 0 980 480" preserveAspectRatio="none">
+        <defs>
+          <marker id="arr-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#38bdf8"/>
+          </marker>
+          <marker id="arr-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#fb923c"/>
+          </marker>
+          <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#a78bfa"/>
+          </marker>
+          <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#34d399"/>
+          </marker>
+          <marker id="arr-yellow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#fbbf24"/>
+          </marker>
+          <marker id="arr-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+          </marker>
+
+          <!-- Animated packet path definitions -->
+          <path id="p1" d="M 100 100 L 200 100" fill="none"/>
+          <path id="p2" d="M 310 100 L 420 100" fill="none"/>
+          <path id="p3" d="M 530 100 L 620 100" fill="none"/>
+          <path id="p4" d="M 730 120 L 730 220" fill="none"/>
+          <path id="p5" d="M 730 280 L 620 360" fill="none"/>
+          <path id="p6" d="M 730 280 L 840 360" fill="none"/>
+          <path id="p7" d="M 530 140 L 380 360" fill="none"/>
+          <path id="p8" d="M 840 420 L 840 460" fill="none"/>
+          <path id="p9" d="M 200 140 L 200 360" fill="none"/>
+        </defs>
+
+        <!-- CLIENT → GATEWAY -->
+        <line x1="100" y1="100" x2="194" y2="100" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+        <text x="145" y="92" class="conn-label" text-anchor="middle">HTTPS/REST</text>
+
+        <!-- GATEWAY → SERVICE MESH -->
+        <line x1="310" y1="100" x2="414" y2="100" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-yellow)" stroke-dasharray="4 3"/>
+        <text x="362" y="92" class="conn-label" text-anchor="middle">mTLS</text>
+
+        <!-- SERVICE MESH → ORDER SVC -->
+        <line x1="530" y1="100" x2="614" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+        <text x="572" y="92" class="conn-label" text-anchor="middle">gRPC</text>
+
+        <!-- ORDER SVC → BROKER -->
+        <line x1="674" y1="120" x2="720" y2="175" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arr-orange)" stroke-dasharray="6 3"/>
+        <text x="706" y="155" class="conn-label" text-anchor="middle">Publish</text>
+
+        <!-- BROKER → INVENTORY -->
+        <line x1="720" y1="290" x2="660" y2="350" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-purple)" stroke-dasharray="3 4"/>
+        <text x="672" y="330" class="conn-label" text-anchor="middle" fill="#a78bfa">Subscribe</text>
+
+        <!-- BROKER → BILLING -->
+        <line x1="780" y1="290" x2="840" y2="350" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-purple)" stroke-dasharray="3 4"/>
+        <text x="830" y="330" class="conn-label" text-anchor="middle" fill="#a78bfa">Subscribe</text>
+
+        <!-- ORDER SVC → ORDER DB -->
+        <line x1="624" y1="140" x2="430" y2="355" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-green)"/>
+        <text x="514" y="256" class="conn-label" text-anchor="middle" fill="#34d399">SQL/NoSQL</text>
+
+        <!-- INVENTORY → CACHE -->
+        <line x1="625" y1="400" x2="625" y2="440" stroke="#34d399" stroke-width="1" marker-end="url(#arr-green)" stroke-dasharray="3 3"/>
+
+        <!-- SERVICE MESH → DISCOVERY -->
+        <line x1="200" y1="140" x2="200" y2="355" stroke="#22d3ee" stroke-width="1" marker-end="url(#arr-gray)" stroke-dasharray="2 4"/>
+        <text x="165" y="260" class="conn-label" text-anchor="middle" fill="#22d3ee" transform="rotate(-90, 165, 260)">Discover</text>
+
+        <!-- Animated packets -->
+        <circle r="5" fill="#38bdf8" filter="url(#glow-blue)" opacity="0.9">
+          <animateMotion dur="1.8s" repeatCount="indefinite" path="M 50 100 L 194 100"/>
+          <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" repeatCount="indefinite"/>
+        </circle>
+
+        <circle r="4" fill="#fb923c" opacity="0.9">
+          <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.4s" path="M 674 120 L 720 230"/>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" repeatCount="indefinite" begin="0.4s"/>
+        </circle>
+
+        <circle r="4" fill="#a78bfa" opacity="0.9">
+          <animateMotion dur="2.0s" repeatCount="indefinite" begin="0.8s" path="M 720 290 L 640 390"/>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.0s" repeatCount="indefinite" begin="0.8s"/>
+        </circle>
+
+        <circle r="4" fill="#a78bfa" opacity="0.9">
+          <animateMotion dur="2.0s" repeatCount="indefinite" begin="1.3s" path="M 780 290 L 840 390"/>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.0s" repeatCount="indefinite" begin="1.3s"/>
+        </circle>
+      </svg>
+
+      <!-- LAYER 1: External -->
+      <!-- Client -->
+      <div class="fnode n-client pulse-1" style="left:10px; top:60px;">
+        <div class="fn-icon">💻</div>
+        <div class="fn-name">Client</div>
+        <div class="fn-sub">Web/Mobile</div>
+      </div>
+
+      <!-- API Gateway -->
+      <div class="fnode n-gateway pulse-2" style="left:200px; top:60px;">
+        <div class="fn-icon">🚪</div>
+        <div class="fn-name">API Gateway</div>
+        <div class="fn-sub">Auth · Rate Limit</div>
+      </div>
+
+      <!-- Service Discovery -->
+      <div class="fnode n-disco pulse-3" style="left:148px; top:360px;">
+        <div class="fn-icon">🔍</div>
+        <div class="fn-name">Service</div>
+        <div class="fn-sub">Registry</div>
+      </div>
+
+      <!-- Service Mesh Sidecar -->
+      <div class="fnode n-mesh pulse-4" style="left:418px; top:60px;">
+        <div class="fn-icon">🕸️</div>
+        <div class="fn-name">Svc Mesh</div>
+        <div class="fn-sub">Sidecar Proxy</div>
+      </div>
+
+      <!-- Order Service -->
+      <div class="fnode n-svc pulse-5" style="left:620px; top:60px;">
+        <div class="fn-icon">⚙️</div>
+        <div class="fn-name">Order Svc</div>
+        <div class="fn-sub">Core Logic</div>
+      </div>
+
+      <!-- Message Broker -->
+      <div class="fnode n-broker pulse-6" style="left:674px; top:220px;">
+        <div class="fn-icon">📨</div>
+        <div class="fn-name">Msg Broker</div>
+        <div class="fn-sub">Kafka / SQS</div>
+      </div>
+
+      <!-- Order DB -->
+      <div class="fnode n-db pulse-7" style="left:370px; top:360px;">
+        <div class="fn-icon">🗄️</div>
+        <div class="fn-name">Order DB</div>
+        <div class="fn-sub">Postgres</div>
+      </div>
+
+      <!-- Inventory Service -->
+      <div class="fnode n-svc pulse-8" style="left:578px; top:360px; border-color:#818cf8; color:#818cf8;">
+        <div class="fn-icon">📦</div>
+        <div class="fn-name">Inventory</div>
+        <div class="fn-sub">Consumer</div>
+      </div>
+
+      <!-- Billing Service -->
+      <div class="fnode n-svc" style="left:780px; top:360px; border-color:#f472b6; color:#f472b6;">
+        <div class="fn-icon">💳</div>
+        <div class="fn-name">Billing</div>
+        <div class="fn-sub">Consumer</div>
+      </div>
+
+      <!-- Cache -->
+      <div class="fnode n-cache" style="left:578px; top:450px; width:100px; height:60px;">
+        <div class="fn-icon" style="font-size:16px">⚡</div>
+        <div class="fn-name" style="font-size:8px">Redis Cache</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div style="display:flex; gap:24px; flex-wrap:wrap; padding:16px 20px; background:var(--panel); border:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text2)">
+      <div style="width:32px;height:2px;background:var(--blue)"></div> Synchronous (REST)
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text2)">
+      <div style="width:32px;height:2px;background:repeating-linear-gradient(90deg,var(--orange) 0,var(--orange) 5px,transparent 5px,transparent 9px)"></div> Async (Queue)
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text2)">
+      <div style="width:32px;height:2px;background:repeating-linear-gradient(90deg,var(--purple) 0,var(--purple) 2px,transparent 2px,transparent 6px)"></div> Event (Pub/Sub)
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text2)">
+      <div style="width:32px;height:2px;background:var(--green)"></div> Database Query
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text2)">
+      <div style="width:32px;height:2px;background:repeating-linear-gradient(90deg,var(--yellow) 0,var(--yellow) 4px,transparent 4px,transparent 8px)"></div> Service Mesh (mTLS)
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. SYNCHRONOUS COMMUNICATION -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="sync">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--blue)">SYNCHRONOUS</div>
+      <div class="section-sub">REST · gRPC · GraphQL · WebSocket — caller blocks until response</div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hb-title">Key Characteristic</div>
+    <div class="hb-body">Caller sends request and WAITS for response before continuing. Creates temporal coupling — if downstream is unavailable, upstream fails. Best when you need immediate data or user is waiting for a reply.</div>
+  </div>
+
+  <!-- REST vs gRPC comparison flow -->
+  <div style="margin-bottom:24px;">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">REST Flow</div>
+    <div class="pattern-flow">
+      <div class="pf-node">
+        <div class="pf-icon">💻</div>
+        <div class="pf-name">Service A</div>
+        <div class="pf-role">Caller</div>
+      </div>
+      <div class="pf-arrow">
+        <div class="pf-line solid"><div class="pf-packet"></div></div>
+        <div class="arrowhead" style="width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid var(--blue)"></div>
+        <div class="pf-type">HTTP POST /orders</div>
+      </div>
+      <div class="pf-node">
+        <div class="pf-icon">🌐</div>
+        <div class="pf-name">HTTP Server</div>
+        <div class="pf-role">Route Handler</div>
+      </div>
+      <div class="pf-arrow">
+        <div class="pf-line solid" style="background:var(--green)"><div class="pf-packet" style="background:var(--green);box-shadow:0 0 8px var(--green)"></div></div>
+        <div class="arrowhead" style="width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid var(--green)"></div>
+        <div class="pf-type">JSON Response 200</div>
+      </div>
+      <div class="pf-node">
+        <div class="pf-icon">⚙️</div>
+        <div class="pf-name">Service B</div>
+        <div class="pf-role">Callee</div>
+      </div>
+      <div class="pf-arrow">
+        <div class="pf-line solid" style="background:var(--green)"><div class="pf-packet" style="background:var(--green);box-shadow:0 0 8px var(--green);animation-delay:0.3s"></div></div>
+        <div class="arrowhead" style="width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid var(--green)"></div>
+        <div class="pf-type">← Reply to A</div>
+      </div>
+      <div class="pf-node" style="opacity:0.4">
+        <div class="pf-icon">⏳</div>
+        <div class="pf-name">Service A</div>
+        <div class="pf-role">Waiting…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <!-- REST -->
+    <div class="acc-item open">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">🌐</div>
+          <div>
+            <div class="acc-title">REST over HTTP/1.1 & HTTP/2</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Representational State Transfer</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--blue)">How it works:</strong> Resources are represented as URLs. HTTP verbs (GET, POST, PUT, DELETE, PATCH) define operations. Responses in JSON or XML. Stateless — each request is self-contained.<br><br>
+
+          <strong style="color:var(--blue)">HTTP Methods:</strong><br>
+          GET /orders/123 — Read a resource<br>
+          POST /orders — Create new<br>
+          PUT /orders/123 — Replace<br>
+          PATCH /orders/123 — Partial update<br>
+          DELETE /orders/123 — Remove<br><br>
+
+          <strong style="color:var(--blue)">Status Codes to know:</strong><br>
+          200 OK · 201 Created · 204 No Content<br>
+          301 Moved · 304 Not Modified<br>
+          400 Bad Request · 401 Unauthorized · 403 Forbidden · 404 Not Found · 409 Conflict · 429 Too Many Requests<br>
+          500 Internal Error · 502 Bad Gateway · 503 Service Unavailable<br><br>
+
+          <strong style="color:var(--green)">Pros:</strong> Human-readable, universal tooling, easy debugging, browser-native<br>
+          <strong style="color:var(--red)">Cons:</strong> Verbose (JSON overhead), text-based, no schema enforcement, HTTP/1.1 head-of-line blocking
+
+          <div class="code-block">
+<span class="cmt">// REST Request</span>
+<span class="kw">POST</span> /api/v1/orders HTTP/1.1
+Host: order-service
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  <span class="str">"customerId"</span>: <span class="str">"abc-123"</span>,
+  <span class="str">"items"</span>: [{ <span class="str">"sku"</span>: <span class="str">"PROD-001"</span>, <span class="str">"qty"</span>: <span class="num">2</span> }]
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- gRPC -->
+    <div class="acc-item open">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">⚡</div>
+          <div>
+            <div class="acc-title">gRPC over HTTP/2</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Google Remote Procedure Call</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--blue)">How it works:</strong> Define service contracts in .proto files. Code-generate client/server stubs. Binary Protocol Buffers serialization over multiplexed HTTP/2 streams.<br><br>
+
+          <strong style="color:var(--blue)">4 Communication Modes:</strong><br>
+          Unary — 1 req → 1 res (like REST)<br>
+          Server Streaming — 1 req → stream of res<br>
+          Client Streaming — stream of req → 1 res<br>
+          Bidirectional — stream ↔ stream<br><br>
+
+          <strong style="color:var(--blue)">Why faster than REST:</strong><br>
+          • Binary Protobuf vs text JSON (~5-10× smaller)<br>
+          • HTTP/2 multiplexing, no HOL blocking<br>
+          • Header compression (HPACK)<br>
+          • Connection reuse<br><br>
+
+          <strong style="color:var(--green)">Pros:</strong> Speed, strict contracts, streaming, auto-generated clients, strong typing<br>
+          <strong style="color:var(--red)">Cons:</strong> Not browser-native, binary = harder to debug, requires proto schema sharing
+
+          <div class="code-block">
+<span class="cmt">// order.proto</span>
+<span class="kw">syntax</span> = <span class="str">"proto3"</span>;
+
+<span class="kw">service</span> <span class="fn">OrderService</span> {
+  <span class="kw">rpc</span> <span class="fn">CreateOrder</span> (OrderRequest) <span class="kw">returns</span> (OrderResponse);
+  <span class="kw">rpc</span> <span class="fn">StreamOrders</span> (Filter) <span class="kw">returns</span> (<span class="kw">stream</span> Order);
+}
+
+<span class="kw">message</span> OrderRequest {
+  <span class="kw">string</span> customer_id = <span class="num">1</span>;
+  <span class="kw">repeated</span> Item items = <span class="num">2</span>;
+}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REST vs gRPC Performance -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">REST vs gRPC — Performance Comparison</div>
+    <div class="metric-bar-wrap">
+      <div class="metric-label"><span>Throughput (RPS)</span><span>REST: 12k · gRPC: 50k</span></div>
+      <div class="metric-bar"><div class="metric-fill" style="width:24%;background:var(--blue);animation-delay:0s"></div></div>
+      <div class="metric-bar" style="margin-top:4px"><div class="metric-fill" style="width:100%;background:var(--purple);animation-delay:0.2s"></div></div>
+    </div>
+    <div class="metric-bar-wrap" style="margin-top:12px">
+      <div class="metric-label"><span>Payload Size</span><span>REST (JSON): 100% · gRPC (Proto): ~20%</span></div>
+      <div class="metric-bar"><div class="metric-fill" style="width:100%;background:var(--orange);animation-delay:0.3s"></div></div>
+      <div class="metric-bar" style="margin-top:4px"><div class="metric-fill" style="width:20%;background:var(--green);animation-delay:0.4s"></div></div>
+    </div>
+    <div class="metric-bar-wrap" style="margin-top:12px">
+      <div class="metric-label"><span>Developer Experience</span><span>REST: Easy · gRPC: Moderate</span></div>
+      <div class="metric-bar"><div class="metric-fill" style="width:90%;background:var(--green);animation-delay:0.5s"></div></div>
+      <div class="metric-bar" style="margin-top:4px"><div class="metric-fill" style="width:65%;background:var(--yellow);animation-delay:0.6s"></div></div>
+    </div>
+  </div>
+
+  <!-- GraphQL + WebSocket -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-tag tag-sync">Synchronous</div>
+      <div class="card-title">🔮 GraphQL</div>
+      <div class="card-body">
+        Query language for APIs. Client specifies exact fields needed — no over-fetching or under-fetching. Single endpoint (/graphql). Schema-first with types, queries, mutations, subscriptions.<br><br>
+        <strong style="color:var(--blue)">Best for:</strong> API gateway aggregation (BFF pattern), mobile clients with bandwidth constraints, complex data graphs.<br><br>
+        <strong style="color:var(--red)">Avoid when:</strong> Simple CRUD — GraphQL adds significant complexity for minimal gain. N+1 query problem requires DataLoader.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-sync">Real-time</div>
+      <div class="card-title">🔌 WebSocket</div>
+      <div class="card-body">
+        Full-duplex TCP connection over HTTP upgrade. Once handshake is done, both parties can push messages anytime. Low latency (no HTTP overhead per message).<br><br>
+        <strong style="color:var(--blue)">Best for:</strong> Chat, live dashboards, collaborative editing, gaming, stock tickers, notifications.<br><br>
+        <strong style="color:var(--orange)">Variants:</strong> Socket.IO (reconnect/rooms), Server-Sent Events (SSE) for server→client only pushes.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. ASYNCHRONOUS COMMUNICATION -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="async">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--orange)">ASYNCHRONOUS</div>
+      <div class="section-sub">Message Queues · Event Streaming · Pub/Sub — fire and forget</div>
+    </div>
+  </div>
+
+  <div class="highlight-box orange">
+    <div class="hb-title">Key Characteristic</div>
+    <div class="hb-body">Producer sends message and continues immediately. Consumer processes whenever ready. Temporal decoupling — both services don't need to be available simultaneously. Enables higher throughput, resilience, and scalability at the cost of eventual consistency.</div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <!-- Kafka -->
+    <div class="acc-item open">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">🌊</div>
+          <div>
+            <div class="acc-title">Apache Kafka</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Distributed Event Streaming Platform</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--orange)">Core Concepts:</strong><br>
+          <span data-tip="Category of messages">Topic</span> — named channel for events<br>
+          <span data-tip="Ordered, immutable log within a topic">Partition</span> — ordered, immutable log within topic<br>
+          <span data-tip="Message sequence number within partition">Offset</span> — position within partition log<br>
+          <span data-tip="Process that writes events to topics">Producer</span> — writes events to topics<br>
+          <span data-tip="Process that reads events from topics">Consumer Group</span> — reads and processes events<br>
+          Broker — Kafka server instance<br>
+          ZooKeeper/KRaft — cluster coordination<br><br>
+
+          <strong style="color:var(--orange)">Key properties:</strong><br>
+          • Messages retained on disk (configurable TTL)<br>
+          • Consumers can replay from any offset<br>
+          • Horizontal scale via partition count<br>
+          • At-least-once delivery by default<br>
+          • Exactly-once with idempotent producers + transactions<br>
+          • Up to millions of events/second<br><br>
+
+          <strong style="color:var(--green)">Best for:</strong> Event sourcing, CQRS, audit logs, stream processing, data pipelines<br>
+          <strong style="color:var(--red)">Avoid when:</strong> Simple task queues, low volume, or when replay isn't needed
+
+          <div class="code-block">
+<span class="cmt">// Kafka Producer (Node.js)</span>
+<span class="kw">const</span> producer = kafka.<span class="fn">producer</span>({ idempotent: <span class="kw">true</span> })
+<span class="kw">await</span> producer.<span class="fn">send</span>({
+  topic: <span class="str">'order-events'</span>,
+  messages: [{
+    key: order.id,
+    value: <span class="fn">JSON.stringify</span>({ type: <span class="str">'ORDER_PLACED'</span>, ...order }),
+    headers: { <span class="str">'correlation-id'</span>: requestId }
+  }]
+})</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RabbitMQ -->
+    <div class="acc-item open">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">🐇</div>
+          <div>
+            <div class="acc-title">RabbitMQ</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">AMQP-based Message Broker</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--orange)">Core Concepts:</strong><br>
+          Exchange — receives messages, routes to queues<br>
+          Queue — buffer holding messages<br>
+          Binding — routing rule (exchange→queue)<br>
+          Routing Key — criteria for routing decisions<br>
+          Consumer — reads from queue, acks/nacks<br>
+          DLX — Dead Letter Exchange for failed msgs<br><br>
+
+          <strong style="color:var(--orange)">Exchange Types:</strong><br>
+          Direct — routes by exact routing key match<br>
+          Fanout — broadcasts to ALL bound queues<br>
+          Topic — pattern matching (order.*.created)<br>
+          Headers — matches on message headers<br><br>
+
+          <strong style="color:var(--orange)">Message lifecycle:</strong><br>
+          Producer → Exchange → Queue → Consumer → ACK/NACK<br>
+          NACK → DLQ (Dead Letter Queue) → alerting<br><br>
+
+          <strong style="color:var(--green)">Best for:</strong> Task queues, flexible routing, low-latency delivery, work distribution<br>
+          <strong style="color:var(--red)">Avoid when:</strong> Need message replay, high-throughput streaming
+
+          <div class="code-block">
+<span class="cmt">// RabbitMQ Consumer (Python)</span>
+<span class="kw">def</span> <span class="fn">process_order</span>(ch, method, props, body):
+  order = json.<span class="fn">loads</span>(body)
+  <span class="kw">try</span>:
+    <span class="fn">handle_order</span>(order)
+    ch.<span class="fn">basic_ack</span>(method.delivery_tag)
+  <span class="kw">except</span> Exception:
+    ch.<span class="fn">basic_nack</span>(method.delivery_tag,
+      requeue=<span class="kw">False</span>)  <span class="cmt"># → DLQ</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Broker Comparison -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:24px;">
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Kafka</th>
+          <th>RabbitMQ</th>
+          <th>AWS SQS/SNS</th>
+          <th>Redis Streams</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Message Retention</td>
+          <td class="good">Days/weeks</td>
+          <td class="bad">Until consumed</td>
+          <td class="mid">Up to 14 days</td>
+          <td class="mid">Configurable</td>
+        </tr>
+        <tr>
+          <td>Replay</td>
+          <td class="good">Yes (from offset)</td>
+          <td class="bad">No</td>
+          <td class="bad">No</td>
+          <td class="good">Yes</td>
+        </tr>
+        <tr>
+          <td>Throughput</td>
+          <td class="good">Millions/sec</td>
+          <td class="mid">Thousands/sec</td>
+          <td class="mid">Thousands/sec</td>
+          <td class="mid">High</td>
+        </tr>
+        <tr>
+          <td>Routing</td>
+          <td class="mid">Topic + partition</td>
+          <td class="good">Flexible exchanges</td>
+          <td class="mid">Topic/Queue</td>
+          <td class="mid">Stream keys</td>
+        </tr>
+        <tr>
+          <td>Delivery Guarantee</td>
+          <td class="good">At-least/exactly-once</td>
+          <td class="good">At-least-once</td>
+          <td class="mid">At-least-once</td>
+          <td class="mid">At-least-once</td>
+        </tr>
+        <tr>
+          <td>Ops Complexity</td>
+          <td class="bad">High</td>
+          <td class="mid">Medium</td>
+          <td class="good">Managed (low)</td>
+          <td class="good">Low (Redis)</td>
+        </tr>
+        <tr>
+          <td>Best Use Case</td>
+          <td>Event streaming, sourcing</td>
+          <td>Task queues, routing</td>
+          <td>Cloud-native apps</td>
+          <td>Lightweight streams</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Messaging Patterns -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-tag tag-async">Pattern</div>
+      <div class="card-title">📢 Pub / Sub</div>
+      <div class="card-body">
+        One producer → Many consumers. Each consumer gets its own copy independently. Decoupled — producer doesn't know consumers exist.<br><br>
+        <strong style="color:var(--orange)">Example:</strong> OrderPlaced event → Inventory, Billing, Notification, Analytics all consume independently.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-async">Pattern</div>
+      <div class="card-title">📬 Point-to-Point</div>
+      <div class="card-body">
+        Message delivered to exactly ONE consumer from a group. Load-balanced across instances. After consumption, message is gone.<br><br>
+        <strong style="color:var(--orange)">Example:</strong> Image resize job queue — worker pool picks up jobs one at a time. Each job processed exactly once.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-async">Pattern</div>
+      <div class="card-title">↩️ Request-Reply</div>
+      <div class="card-body">
+        Simulates sync behavior over async infrastructure. Include replyTo queue + correlationId in message header. Producer subscribes to reply queue and waits.<br><br>
+        <strong style="color:var(--orange)">Use when:</strong> Need async infrastructure benefits but require a response (e.g., price calculation).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. COMMUNICATION PATTERNS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="patterns">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--purple)">DESIGN PATTERNS</div>
+      <div class="section-sub">Outbox · CQRS · Event Sourcing · Competing Consumers · Priority Queue</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="acc-item">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">📤</div>
+          <div>
+            <div class="acc-title">Transactional Outbox Pattern</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Dual-write consistency guarantee</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--purple)">Problem:</strong> How do you atomically update DB and publish a message? A service crash between the two operations causes inconsistency.<br><br>
+
+          <strong style="color:var(--purple)">Solution:</strong><br>
+          1. Write DB update + event to OUTBOX table in same transaction<br>
+          2. Message relay (CDC/poller) reads outbox and publishes to broker<br>
+          3. Mark outbox record as sent<br><br>
+
+          <strong style="color:var(--purple)">Relay options:</strong><br>
+          • Polling — simple, adds DB load<br>
+          • Debezium CDC — stream from binlog, zero-delay<br><br>
+
+          <strong style="color:var(--green)">Guarantees:</strong> Exactly-once DB write. At-least-once message publish (idempotent consumer needed)
+
+          <div class="code-block">
+<span class="cmt">// Atomic: order + outbox in one tx</span>
+<span class="kw">BEGIN</span> TRANSACTION;
+  <span class="kw">INSERT INTO</span> orders VALUES (...);
+  <span class="kw">INSERT INTO</span> outbox (event_type, payload)
+  VALUES (<span class="str">'ORDER_CREATED'</span>, <span class="str">'{...}'</span>);
+<span class="kw">COMMIT</span>;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">⚡</div>
+          <div>
+            <div class="acc-title">CQRS Pattern</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Command Query Responsibility Segregation</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--purple)">Problem:</strong> Read and write workloads have different scaling needs. Complex reports slow down write operations.<br><br>
+
+          <strong style="color:var(--purple)">Solution:</strong> Separate write model (Commands) from read model (Queries). Events synchronize the read side.<br><br>
+
+          <strong style="color:var(--purple)">Write side:</strong> Validates + processes commands → emits events<br>
+          <strong style="color:var(--purple)">Read side:</strong> Subscribes to events → builds optimized read models (denormalized, indexed)<br><br>
+
+          <strong style="color:var(--orange)">Trade-off:</strong> Eventual consistency between write and read sides (typically milliseconds).<br><br>
+
+          <strong style="color:var(--green)">Benefits:</strong> Scale reads/writes independently, tailored query models, simpler read queries
+
+          <div class="code-block">
+<span class="cmt">// Command handler</span>
+<span class="fn">handleCreateOrder</span>(cmd) {
+  order.<span class="fn">validate</span>(cmd)
+  <span class="kw">await</span> orderRepo.<span class="fn">save</span>(order)
+  <span class="kw">await</span> eventBus.<span class="fn">publish</span>(<span class="str">'OrderCreated'</span>, order)
+}
+
+<span class="cmt">// Read model projector</span>
+<span class="fn">on</span>(<span class="str">'OrderCreated'</span>, (event) => {
+  orderSummaryDb.<span class="fn">upsert</span>(event.data)
+})</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">📜</div>
+          <div>
+            <div class="acc-title">Event Sourcing</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">State as immutable event log</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--purple)">Core idea:</strong> Don't store current state — store ALL events that led to it. Reconstruct state by replaying events.<br><br>
+
+          <strong style="color:var(--purple)">Event Store:</strong> Append-only log of domain events<br>
+          Snapshots — periodic state captures for fast reconstruction<br><br>
+
+          <strong style="color:var(--purple)">Benefits:</strong><br>
+          • Full audit history built-in<br>
+          • Time-travel debugging<br>
+          • Multiple read models from same events<br>
+          • Natural fit with CQRS<br><br>
+
+          <strong style="color:var(--red)">Challenges:</strong><br>
+          • Schema evolution (event versioning)<br>
+          • Eventual consistency<br>
+          • Query complexity<br>
+          • Upcasting old events
+
+          <div class="code-block">
+<span class="cmt">// Events in store:</span>
+OrderCreated { id, items, at: T1 }
+ItemAdded    { orderId, item, at: T2 }
+Discounted   { orderId, pct: 10, at: T3 }
+OrderPlaced  { orderId, at: T4 }
+
+<span class="cmt">// Reconstruct current state:</span>
+state = events.<span class="fn">reduce</span>(apply, initialState)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left">
+          <div class="acc-icon">👥</div>
+          <div>
+            <div class="acc-title">Competing Consumers</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3)">Horizontal scale of message processing</div>
+          </div>
+        </div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--purple)">How it works:</strong> Multiple consumer instances subscribe to the same queue. Broker delivers each message to exactly one consumer. Natural load balancing.<br><br>
+
+          <strong style="color:var(--purple)">Scaling:</strong> Add more consumer instances during peak. Remove during off-peak. Autoscale based on queue depth (KEDA, SQS → Lambda).<br><br>
+
+          <strong style="color:var(--orange)">Considerations:</strong><br>
+          • Message ordering not guaranteed across consumers<br>
+          • Idempotency required (duplicate delivery possible)<br>
+          • Consumer groups in Kafka: each partition → 1 consumer<br><br>
+
+          <strong style="color:var(--green)">Best for:</strong> CPU-intensive jobs, background processing, image/video processing, report generation
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. SAGA PATTERN -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="saga">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--green)">SAGA PATTERN</div>
+      <div class="section-sub">Distributed transactions without 2PC — choreography vs orchestration</div>
+    </div>
+  </div>
+
+  <div class="highlight-box green">
+    <div class="hb-title">Why Not 2-Phase Commit (2PC)?</div>
+    <div class="hb-body">2PC requires all services to lock resources until all agree to commit. In microservices this causes tight coupling, single point of failure (coordinator), and massive latency. Sagas replace 2PC with a sequence of local transactions + compensating transactions for rollback.</div>
+  </div>
+
+  <div class="detail-2col" style="margin-bottom:24px;">
+    <!-- Choreography -->
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Choreography — Event-Driven</div>
+      <div class="saga-wrap">
+        <div class="saga-flow">
+
+          <div class="saga-step">
+            <div class="saga-svc" style="background:var(--blue-dim);border:1px solid var(--blue);color:var(--blue)">Order Svc</div>
+            <div class="saga-event-wrap">
+              <div class="saga-arrow fwd"></div>
+              <div class="saga-event">OrderCreated ✓</div>
+              <div class="saga-arrow fwd"></div>
+            </div>
+            <div></div>
+          </div>
+          <div class="saga-connector"><div class="saga-vline"></div></div>
+
+          <div class="saga-step">
+            <div></div>
+            <div class="saga-event-wrap">
+              <div class="saga-arrow fwd"></div>
+              <div class="saga-event">PaymentProcessed ✓</div>
+              <div class="saga-arrow fwd"></div>
+            </div>
+            <div class="saga-svc" style="background:var(--green-dim);border:1px solid var(--green);color:var(--green)">Payment Svc</div>
+          </div>
+          <div class="saga-connector"><div class="saga-vline"></div></div>
+
+          <div class="saga-step">
+            <div class="saga-svc" style="background:var(--purple-dim);border:1px solid var(--purple);color:var(--purple)">Inventory Svc</div>
+            <div class="saga-event-wrap">
+              <div class="saga-arrow fwd"></div>
+              <div class="saga-event">StockReserved ✓</div>
+              <div class="saga-arrow fwd"></div>
+            </div>
+            <div></div>
+          </div>
+          <div class="saga-connector"><div class="saga-vline" style="background:var(--green)"></div></div>
+
+          <div class="saga-step">
+            <div></div>
+            <div class="saga-event-wrap">
+              <div class="saga-arrow fwd"></div>
+              <div class="saga-event" style="color:var(--green)">OrderConfirmed ✓</div>
+              <div class="saga-arrow fwd"></div>
+            </div>
+            <div class="saga-svc" style="background:var(--orange-dim);border:1px solid var(--orange);color:var(--orange)">Shipping Svc</div>
+          </div>
+
+          <!-- Failure path -->
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">↳ Failure path — compensating transactions</div>
+            <div class="saga-step">
+              <div class="saga-svc" style="background:var(--red-dim);border:1px solid var(--red);color:var(--red)">Inventory Svc</div>
+              <div class="saga-event-wrap">
+                <div class="saga-arrow comp"></div>
+                <div class="saga-event" style="color:var(--red)">StockReleased ✗</div>
+                <div class="saga-arrow comp"></div>
+              </div>
+              <div></div>
+            </div>
+            <div class="saga-connector"><div class="saga-vline" style="background:var(--red)"></div></div>
+            <div class="saga-step">
+              <div></div>
+              <div class="saga-event-wrap">
+                <div class="saga-arrow comp"></div>
+                <div class="saga-event" style="color:var(--red)">PaymentRefunded ✗</div>
+                <div class="saga-arrow comp"></div>
+              </div>
+              <div class="saga-svc" style="background:var(--red-dim);border:1px solid var(--red);color:var(--red)">Payment Svc</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:12px;line-height:1.7">
+        <strong style="color:var(--green)">Pros:</strong> No central coordinator, loose coupling, simple for short sagas<br>
+        <strong style="color:var(--red)">Cons:</strong> Hard to trace/debug, implicit logic spread across services, risk of cyclic events
+      </div>
+    </div>
+
+    <!-- Orchestration -->
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Orchestration — Central Coordinator</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">Saga Orchestrator starts</div>
+          <div class="step-body">Orchestrator receives CreateOrder command. Begins saga state machine. Records saga ID + current state.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Command → Payment Service</div>
+          <div class="step-body">Orchestrator sends ProcessPayment command. Awaits reply event. Transitions state on success/failure.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">Step 3</div>
+          <div class="step-title">Command → Inventory Service</div>
+          <div class="step-body">Sends ReserveStock command after payment success. Inventory replies StockReserved or StockUnavailable.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">Step 4a — Success</div>
+          <div class="step-title" style="color:var(--green)">Order Confirmed</div>
+          <div class="step-body">Orchestrator marks saga complete. Publishes OrderConfirmed event to notify downstream.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">Step 4b — Failure</div>
+          <div class="step-title" style="color:var(--red)">Compensate</div>
+          <div class="step-body">Orchestrator sends RefundPayment + ReleaseStock commands. Marks saga as Failed + CompensationComplete.</div>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:12px;line-height:1.7">
+        <strong style="color:var(--green)">Pros:</strong> Clear flow, easy to trace/debug, centralized failure handling<br>
+        <strong style="color:var(--red)">Cons:</strong> Orchestrator is a dependency, risk of god service, harder to add new participants
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. SERVICE DISCOVERY -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="discovery">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--cyan)">SERVICE DISCOVERY</div>
+      <div class="section-sub">Client-side · Server-side · DNS · Service Registry</div>
+    </div>
+  </div>
+
+  <div class="disco-grid" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="card-tag tag-disco">Client-Side Discovery</div>
+      <div class="card-title">🔍 Client Resolves</div>
+      <div class="card-body">
+        Client queries service registry (Consul, Eureka, etcd) to get list of available instances. Client applies load balancing algorithm (round-robin, least-connections, random) and connects directly.<br><br>
+        <strong style="color:var(--cyan)">Tools:</strong> Netflix Eureka, HashiCorp Consul, Apache Zookeeper<br><br>
+        <strong style="color:var(--green)">Pros:</strong> Client controls LB algorithm. No extra hop.<br>
+        <strong style="color:var(--red)">Cons:</strong> LB logic in every client, language-specific libraries needed.
+      </div>
+      <div class="code-block" style="margin-top:12px">
+<span class="cmt">// Client queries registry first</span>
+instances = registry.<span class="fn">getInstances</span>(<span class="str">'order-service'</span>)
+chosen = loadBalancer.<span class="fn">choose</span>(instances)
+result = <span class="kw">await</span> http.<span class="fn">get</span>(chosen.url + <span class="str">'/orders'</span>)</div>
+    </div>
+
+    <div class="card">
+      <div class="card-tag tag-disco">Server-Side Discovery</div>
+      <div class="card-title">⚖️ Load Balancer Resolves</div>
+      <div class="card-body">
+        Client sends request to load balancer / router. LB queries registry and forwards to a healthy instance. Client is fully unaware of discovery.<br><br>
+        <strong style="color:var(--cyan)">Tools:</strong> AWS ALB, Kubernetes DNS/Services, NGINX, HAProxy, Envoy<br><br>
+        <strong style="color:var(--green)">Pros:</strong> Client is simple. Language-agnostic. Consistent LB behavior.<br>
+        <strong style="color:var(--red)">Cons:</strong> Extra network hop. LB is a potential bottleneck and SPOF without HA setup.
+      </div>
+      <div class="code-block" style="margin-top:12px">
+<span class="cmt"># Kubernetes DNS resolves automatically</span>
+<span class="cmt"># http://order-service → Service → Pod IPs</span>
+result = requests.<span class="fn">get</span>(
+  <span class="str">'http://order-service.default.svc.cluster.local/orders'</span>
+)</div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-tag tag-disco">DNS-Based</div>
+      <div class="card-title">🌐 DNS Discovery</div>
+      <div class="card-body">
+        Service name resolves via DNS to IP(s). Kubernetes uses CoreDNS. Simple but DNS caching can cause stale IPs. SRV records include port info.<br><br>
+        TTL must be low (1-5s) for fast failover. Not suitable for rapid instance churn.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-disco">Health Checks</div>
+      <div class="card-title">💓 Health & Registration</div>
+      <div class="card-body">
+        Services register on startup with metadata (host, port, version, tags). Send periodic heartbeats. Registry deregisters on failed health check.<br><br>
+        Health check types: HTTP, TCP, gRPC, script, TTL (service pings registry).
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-disco">Kubernetes</div>
+      <div class="card-title">☸️ K8s Native</div>
+      <div class="card-body">
+        Services exposed via ClusterIP, NodePort, or LoadBalancer. kube-proxy sets up iptables rules. CoreDNS provides service DNS. Endpoints object tracks healthy pods automatically.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 7. RESILIENCE PATTERNS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="resilience">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--red)">RESILIENCE PATTERNS</div>
+      <div class="section-sub">Circuit Breaker · Retry · Timeout · Bulkhead · Rate Limit · Fallback · Backpressure</div>
+    </div>
+  </div>
+
+  <!-- Circuit Breaker States -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">⚡ Circuit Breaker — State Machine</div>
+    <div class="card-body" style="margin-bottom:16px;">Tracks failure rate over a rolling time window. Trips open to stop all calls to a failing service, allowing it to recover. Periodically allows probe requests in half-open state.</div>
+    <div class="circuit-states">
+      <div class="circuit-state" style="border-color:var(--green)">
+        <div class="cs-icon">🟢</div>
+        <div class="cs-name" style="color:var(--green)">CLOSED</div>
+        <div class="cs-desc">Normal operation. All requests pass through. Failure counter increments on errors. Trips OPEN if threshold exceeded (e.g., &gt;50% in 10s).</div>
+      </div>
+      <div class="circuit-state" style="border-color:var(--red)">
+        <div class="cs-icon">🔴</div>
+        <div class="cs-name" style="color:var(--red)">OPEN</div>
+        <div class="cs-desc">All requests fail immediately (no network call). Returns cached value / error / fallback. After timeout (e.g., 30s) transitions to HALF-OPEN.</div>
+      </div>
+      <div class="circuit-state" style="border-color:var(--yellow)">
+        <div class="cs-icon">🟡</div>
+        <div class="cs-name" style="color:var(--yellow)">HALF-OPEN</div>
+        <div class="cs-desc">Allows limited probe requests through. If probes succeed → CLOSED. If probes fail → OPEN again. Prevents premature re-engagement.</div>
+      </div>
+    </div>
+    <div class="code-block" style="margin-top:16px">
+<span class="cmt">// Resilience4j Circuit Breaker (Java)</span>
+CircuitBreaker cb = CircuitBreaker.<span class="fn">ofDefaults</span>(<span class="str">"orderSvc"</span>);
+<span class="kw">var</span> supplier = CircuitBreaker.<span class="fn">decorateSupplier</span>(cb, () ->
+  orderService.<span class="fn">getOrder</span>(id)
+);
+<span class="kw">var</span> result = Try.<span class="fn">ofSupplier</span>(supplier)
+  .<span class="fn">recover</span>(ex -> <span class="fn">fallback</span>(id))
+  .<span class="fn">get</span>();</div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="acc-item open">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left"><div class="acc-icon">🔁</div><div><div class="acc-title">Retry + Exponential Backoff</div></div></div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--red)">Retry only transient failures:</strong> Network timeouts, 503 Service Unavailable, 429 Too Many Requests. Never retry on 400, 401, 403 (client errors).<br><br>
+          <strong style="color:var(--red)">Exponential Backoff:</strong> delay = baseDelay × 2^attempt<br>
+          Attempt 1: 100ms, 2: 200ms, 3: 400ms, 4: 800ms...<br><br>
+          <strong style="color:var(--red)">Jitter:</strong> Add random offset to prevent thundering herd (all retries hitting at same time).<br>
+          delay = random(0, baseDelay × 2^attempt)<br><br>
+          <strong style="color:var(--red)">Max retries:</strong> Always cap — 3-5 retries max. Combine with circuit breaker.
+
+          <div class="code-block">
+<span class="cmt">// With jitter</span>
+<span class="kw">function</span> <span class="fn">backoff</span>(attempt, base = <span class="num">100</span>) {
+  <span class="kw">const</span> exp = base * Math.<span class="fn">pow</span>(<span class="num">2</span>, attempt)
+  <span class="kw">const</span> jitter = Math.<span class="fn">random</span>() * exp
+  <span class="kw">return</span> Math.<span class="fn">min</span>(exp + jitter, <span class="num">30000</span>)
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item open">
+      <div class="acc-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="acc-head-left"><div class="acc-icon">🪣</div><div><div class="acc-title">Bulkhead Pattern</div></div></div>
+        <div class="acc-toggle">+</div>
+      </div>
+      <div class="acc-body">
+        <div class="acc-content">
+          <strong style="color:var(--red)">Problem:</strong> A slow downstream service consumes all threads/connections, starving other services.<br><br>
+          <strong style="color:var(--red)">Bulkhead:</strong> Isolate resources per dependency. Each downstream gets its own thread pool / semaphore / connection pool. One slow service can't affect others.<br><br>
+          <strong style="color:var(--red)">Thread Pool Bulkhead:</strong> Fixed threads per service. Requests queue or fail when pool exhausted.<br>
+          <strong style="color:var(--red)">Semaphore Bulkhead:</strong> Limit concurrent calls per service. Simpler, same thread. Less isolation.
+
+          <div class="code-block">
+<span class="cmt">// Separate pools per downstream</span>
+paymentPool = <span class="kw">new</span> <span class="fn">ThreadPool</span>({ size: <span class="num">10</span> })
+inventoryPool = <span class="kw">new</span> <span class="fn">ThreadPool</span>({ size: <span class="num">5</span> })
+<span class="cmt">// inventory slowdown can't starve payment</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-tag tag-res">Resilience</div>
+      <div class="card-title">⏱️ Timeout</div>
+      <div class="card-body">Always set aggressive timeouts. A hanging call consuming a thread is worse than a fast failure. Use different timeouts per dependency based on SLA. Connection timeout ≠ read timeout.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-res">Resilience</div>
+      <div class="card-title">🏃 Fallback</div>
+      <div class="card-body">Return cached data, default value, or degraded response when service fails. Must be intentionally designed. Stale cache better than error. Degrade gracefully — partial functionality beats full failure.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-res">Resilience</div>
+      <div class="card-title">🚦 Rate Limiting</div>
+      <div class="card-body">Token Bucket — smooth bursts. Fixed Window — simple. Sliding Window — accurate. Leaky Bucket — strict rate. Apply at API gateway and per-client. Return 429 with Retry-After header.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-res">Resilience</div>
+      <div class="card-title">💨 Backpressure</div>
+      <div class="card-body">Consumers signal producers to slow down when overwhelmed. Prevents OOM and cascade failures. Implemented via bounded queues, reactive streams (RxJava, Project Reactor), flow control in gRPC.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 8. SERVICE MESH -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="mesh">
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--yellow)">SERVICE MESH</div>
+      <div class="section-sub">Istio · Linkerd · Envoy — infrastructure-layer cross-cutting concerns</div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background:linear-gradient(135deg,var(--yellow-dim),transparent);border-color:rgba(251,191,36,0.3);margin-bottom:24px;">
+    <div class="hb-title" style="color:var(--yellow)">What is a Service Mesh?</div>
+    <div class="hb-body">A dedicated infrastructure layer that handles service-to-service communication via sidecar proxies deployed alongside each service. Offloads cross-cutting concerns (mTLS, retries, tracing, LB) from application code to the infrastructure — without any code changes.</div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Sidecar Proxy Architecture</div>
+      <div class="mesh-grid">
+        <div class="mesh-svc">
+          <div style="font-size:18px;margin-bottom:4px">⚙️</div>
+          <div class="ms-name">Order Svc</div>
+          <div class="ms-proxy">Envoy Proxy</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3)">
+          ←mTLS→
+        </div>
+        <div class="mesh-svc">
+          <div style="font-size:18px;margin-bottom:4px">📦</div>
+          <div class="ms-name">Inventory</div>
+          <div class="ms-proxy">Envoy Proxy</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3)">
+          ↕ mTLS
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3)">
+          Control Plane
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3)">
+          ↕ mTLS
+        </div>
+        <div class="mesh-svc">
+          <div style="font-size:18px;margin-bottom:4px">💳</div>
+          <div class="ms-name">Payment</div>
+          <div class="ms-proxy">Envoy Proxy</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3)">
+          ←mTLS→
+        </div>
+        <div class="mesh-svc">
+          <div style="font-size:18px;margin-bottom:4px">📧</div>
+          <div class="ms-name">Notif Svc</div>
+          <div class="ms-proxy">Envoy Proxy</div>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:24px;line-height:1.7">
+        Every service gets a sidecar proxy (Envoy). All traffic goes through proxies. Control plane (Istiod) pushes config. Zero trust — every connection is authenticated + encrypted.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Capabilities</div>
+      <div class="obs-stack">
+        <div class="obs-layer">
+          <div class="obs-icon">🔒</div>
+          <div class="obs-name" style="font-size:12px">mTLS Encryption</div>
+          <div class="obs-desc">Automatic cert rotation. Zero-trust between all services. SPIFFE/SPIRE identity.</div>
+        </div>
+        <div class="obs-layer">
+          <div class="obs-icon">⚖️</div>
+          <div class="obs-name" style="font-size:12px">Traffic Management</div>
+          <div class="obs-desc">Canary, blue/green, A/B splits. Traffic mirroring. Weighted routing.</div>
+        </div>
+        <div class="obs-layer">
+          <div class="obs-icon">🔁</div>
+          <div class="obs-name" style="font-size:12px">Resilience</div>
+          <div class="obs-desc">Retries, timeouts, circuit breaking — without code changes.</div>
+        </div>
+        <div class="obs-layer">
+          <div class="obs-icon">📊</div>
+          <div class="obs-name" style="font-size:12px">Observability</div>
+          <div class="obs-desc">Distributed tracing, golden signals metrics, access logs — all auto-instrumented.</div>
+        </div>
+        <div class="obs-layer">
+          <div class="obs-icon">📋</div>
+          <div class="obs-name" style="font-size:12px">Policy Enforcement</div>
+          <div class="obs-desc">AuthorizationPolicy — who can call what. PeerAuthentication mode.</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="background:linear-gradient(135deg,rgba(248,113,113,0.1),transparent);border-color:rgba(248,113,113,0.3);margin-top:16px;">
+        <div class="hb-title" style="color:var(--red)">When NOT to use a service mesh</div>
+        <div class="hb-body">Adds 10-30ms latency, significant CPU overhead, and operational complexity. Only justified with 20+ services where cross-cutting concerns are a pain. Start without it.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 9. API GATEWAY & BFF -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="gateway">
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--orange)">API GATEWAY & BFF</div>
+      <div class="section-sub">Single entry point · Request aggregation · Backend for Frontend pattern</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="card-tag tag-async">Gateway</div>
+      <div class="card-title">🚪 API Gateway Responsibilities</div>
+      <div class="card-body">
+        <div class="steps" style="padding-left:24px;">
+          <div class="step" style="margin-bottom:16px">
+            <div class="step-num">Auth Layer</div>
+            <div class="step-body">JWT validation, OAuth2 token introspection, API key verification. Centralized — services trust gateway. No per-service auth code.</div>
+          </div>
+          <div class="step" style="margin-bottom:16px">
+            <div class="step-num">Rate Limiting</div>
+            <div class="step-body">Per-client, per-endpoint, per-IP limits. Token bucket / sliding window. 429 with Retry-After. Protect backend services.</div>
+          </div>
+          <div class="step" style="margin-bottom:16px">
+            <div class="step-num">Request Routing</div>
+            <div class="step-body">Path-based, header-based, version-based routing. /api/v1/orders → order-service. A/B routing by user segment.</div>
+          </div>
+          <div class="step" style="margin-bottom:16px">
+            <div class="step-num">Aggregation</div>
+            <div class="step-body">Fan out to multiple services. Merge responses into single payload. Reduce client round-trips. Schema transformation.</div>
+          </div>
+          <div class="step" style="margin-bottom:0">
+            <div class="step-num">SSL Termination</div>
+            <div class="step-body">Handle TLS at edge. Internal services communicate over plain HTTP (or mesh-managed mTLS). Simplifies cert management.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-tag tag-async">BFF Pattern</div>
+      <div class="card-title">🖥️ Backend for Frontend</div>
+      <div class="card-body" style="margin-bottom:16px">
+        One API gateway per client type. Each BFF tailors the API to its client's specific needs — shape, verbosity, auth model, and optimization.
+      </div>
+      <div class="bff-wrap" style="padding:16px;gap:10px">
+        <div class="bff-clients">
+          <div class="bff-client">📱 Mobile App</div>
+          <div class="bff-client">🌐 Web App</div>
+          <div class="bff-client">🤝 3rd Party API</div>
+          <div class="bff-client">🖥️ Desktop</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;font-size:18px;color:var(--text3)">
+          ➡️<br>➡️<br>➡️<br>➡️
+        </div>
+        <div class="bff-gateways">
+          <div class="bff-gateway" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue)">Mobile BFF</div>
+          <div class="bff-gateway" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple)">Web BFF</div>
+          <div class="bff-gateway" style="background:var(--orange-dim);border-color:var(--orange);color:var(--orange)">Partner BFF</div>
+          <div class="bff-gateway" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow)">Desktop BFF</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:26px;font-size:14px;color:var(--text3)">
+          ➡️<br>➡️
+        </div>
+        <div class="bff-services" style="justify-content:center">
+          <div class="bff-svc">⚙️ Order Svc</div>
+          <div class="bff-svc">📦 Inventory</div>
+          <div class="bff-svc">💳 Payment</div>
+        </div>
+      </div>
+      <div class="card-body" style="margin-top:12px">
+        <strong style="color:var(--orange)">Mobile BFF:</strong> Minimal payload, compressed, battery-aware<br>
+        <strong style="color:var(--orange)">Web BFF:</strong> Rich data, SSR-friendly, session-based<br>
+        <strong style="color:var(--orange)">Partner BFF:</strong> Versioned, rate-limited, API-key auth<br><br>
+        <strong style="color:var(--text3)">Tools:</strong> Kong, AWS API Gateway, Traefik, NGINX, Apigee, Envoy, custom Node.js/Go
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 10. OBSERVABILITY -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="observability">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--cyan)">OBSERVABILITY</div>
+      <div class="section-sub">Logs · Metrics · Traces — the three pillars of distributed system visibility</div>
+    </div>
+  </div>
+
+  <div class="obs-stack" style="margin-bottom:24px;">
+    <div class="obs-layer" style="border-color:var(--blue);background:var(--blue-dim);">
+      <div class="obs-icon">📋</div>
+      <div class="obs-name">Structured Logs</div>
+      <div class="obs-desc">JSON log lines with correlationId, traceId, service name, timestamp, severity. Aggregate in central system. Search and alert on patterns. Include request/response metadata.</div>
+      <div class="obs-tools">
+        <div class="obs-tool">ELK Stack</div>
+        <div class="obs-tool">Loki</div>
+        <div class="obs-tool">Splunk</div>
+        <div class="obs-tool">CloudWatch</div>
+      </div>
+    </div>
+
+    <div class="obs-layer" style="border-color:var(--orange);background:var(--orange-dim);">
+      <div class="obs-icon">📊</div>
+      <div class="obs-name">Metrics (4 Golden Signals)</div>
+      <div class="obs-desc">Latency (p50/p95/p99), Traffic (RPS), Errors (rate/type), Saturation (CPU/memory/queue depth). Time-series databases. Alert on SLO breaches.</div>
+      <div class="obs-tools">
+        <div class="obs-tool">Prometheus</div>
+        <div class="obs-tool">Grafana</div>
+        <div class="obs-tool">Datadog</div>
+        <div class="obs-tool">CloudWatch</div>
+      </div>
+    </div>
+
+    <div class="obs-layer" style="border-color:var(--purple);background:var(--purple-dim);">
+      <div class="obs-icon">🔍</div>
+      <div class="obs-name">Distributed Tracing</div>
+      <div class="obs-desc">Single request traced across all services via TraceID + SpanID propagation (W3C Trace Context). Waterfall view shows latency per hop, bottlenecks, and cross-service call graph.</div>
+      <div class="obs-tools">
+        <div class="obs-tool">Jaeger</div>
+        <div class="obs-tool">Zipkin</div>
+        <div class="obs-tool">Tempo</div>
+        <div class="obs-tool">X-Ray</div>
+        <div class="obs-tool">OpenTelemetry</div>
+      </div>
+    </div>
+
+    <div class="obs-layer" style="border-color:var(--green);background:var(--green-dim);">
+      <div class="obs-icon">🧩</div>
+      <div class="obs-name">OpenTelemetry (OTel)</div>
+      <div class="obs-desc">Vendor-neutral CNCF standard for instrumentation. Single SDK generates logs + metrics + traces. OTel Collector routes to multiple backends. Instrument once, send anywhere.</div>
+      <div class="obs-tools">
+        <div class="obs-tool">OTel SDK</div>
+        <div class="obs-tool">OTel Collector</div>
+        <div class="obs-tool">Auto-instrumentation</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hb-title">Correlation ID Pattern</div>
+    <div class="hb-body">Generate a unique ID at the edge (API Gateway or first service). Propagate via HTTP headers (X-Correlation-ID, traceparent) through every service call and async message. Include in every log line. Enables full request reconstruction across services in logs.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 11. SECURITY -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="security">
+  <div class="section-header">
+    <div class="section-num">11</div>
+    <div class="section-info">
+      <div class="section-title" style="color:var(--pink)">SECURITY</div>
+      <div class="section-sub">Zero Trust · mTLS · JWT · OAuth2 · SPIFFE — auth between services</div>
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="card-tag tag-sec">Zero Trust</div>
+      <div class="card-title">🔐 Zero Trust Network</div>
+      <div class="card-body">
+        "Never trust, always verify." Every service-to-service call is authenticated and authorized — even internal calls. No implicit trust based on network location.<br><br>
+        Assume breach. Minimize blast radius. Verify explicitly at every hop.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-sec">Service Auth</div>
+      <div class="card-title">🤝 Mutual TLS (mTLS)</div>
+      <div class="card-body">
+        Both client and server present certificates. Bi-directional authentication — proves identity of caller AND callee. SPIFFE SVID certificates issued per workload. Service mesh automates this transparently.<br><br>
+        Service A cert: spiffe://cluster.local/ns/default/sa/order-svc
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-sec">User Auth</div>
+      <div class="card-title">🎟️ JWT + OAuth2</div>
+      <div class="card-body">
+        Client authenticates at gateway → receives JWT. JWT propagated to downstream services. Services validate signature, check claims (sub, roles, exp). Short-lived tokens (15min) + refresh tokens.<br><br>
+        OAuth2 flows: Client Credentials (M2M), Auth Code (user), Device Flow (IoT).
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-tag tag-sec">Secrets Management</div>
+      <div class="card-title">🗝️ Secrets at Rest & Transit</div>
+      <div class="card-body">
+        Never hardcode secrets. Use secrets managers (HashiCorp Vault, AWS Secrets Manager, K8s Secrets with external-secrets-operator). Rotate credentials automatically. Audit access to secrets.<br><br>
+        Principle: Services receive secrets via environment variables or file mounts, never from source code.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-tag tag-sec">Message Security</div>
+      <div class="card-title">📨 Securing Async Messages</div>
+      <div class="card-body">
+        Kafka: SASL authentication, TLS in transit, ACLs per topic. Message-level signing for integrity. Dead Letter Queues require same ACLs.<br><br>
+        Avoid putting sensitive PII in messages. Use reference (customer ID) not full customer object. Consumers can fetch details if needed.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 12. DECISION GUIDE -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="decision">
+  <div class="section-header">
+    <div class="section-num">12</div>
+    <div class="section-info">
+      <div class="section-title">DECISION GUIDE</div>
+      <div class="section-sub">Choosing the right communication style for your use case</div>
+    </div>
+  </div>
+
+  <div class="decision-tree" style="margin-bottom:24px;">
+    <div class="decision-q">Does the caller need an immediate response to continue?</div>
+    <div class="decision-branches">
+      <div class="decision-branch">
+        <div class="db-label" style="color:var(--blue)">YES → Synchronous</div>
+        <div class="decision-answer" style="border-color:var(--blue)">
+          <strong style="color:var(--blue)">User is waiting?</strong><br>
+          → REST/gRPC via API Gateway<br>
+          → Add Circuit Breaker + Timeout<br>
+          → Cache responses where possible
+        </div>
+        <div class="decision-answer" style="border-color:var(--blue)">
+          <strong style="color:var(--blue)">High-throughput internal?</strong><br>
+          → gRPC (binary, streaming)<br>
+          → Service Mesh for mTLS
+        </div>
+        <div class="decision-answer" style="border-color:var(--blue)">
+          <strong style="color:var(--blue)">Complex graph query?</strong><br>
+          → GraphQL at BFF layer<br>
+          → DataLoader for N+1 prevention
+        </div>
+      </div>
+      <div class="decision-branch">
+        <div class="db-label" style="color:var(--orange)">NO → Asynchronous</div>
+        <div class="decision-answer" style="border-color:var(--orange)">
+          <strong style="color:var(--orange)">Fan-out to many consumers?</strong><br>
+          → Pub/Sub (Kafka topic)<br>
+          → Each consumer independent
+        </div>
+        <div class="decision-answer" style="border-color:var(--orange)">
+          <strong style="color:var(--orange)">Task queue / one consumer?</strong><br>
+          → RabbitMQ / SQS queue<br>
+          → Competing consumers pattern
+        </div>
+        <div class="decision-answer" style="border-color:var(--orange)">
+          <strong style="color:var(--orange)">Distributed transaction?</strong><br>
+          → Saga pattern (Choreography or Orchestration)<br>
+          → Compensating transactions for rollback
+        </div>
+        <div class="decision-answer" style="border-color:var(--orange)">
+          <strong style="color:var(--orange)">Need audit trail + replay?</strong><br>
+          → Event Sourcing + Kafka<br>
+          → CQRS for read models
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Comparison Table -->
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:24px;">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)">Complete Protocol Comparison</div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Protocol</th>
+          <th>Coupling</th>
+          <th>Latency</th>
+          <th>Throughput</th>
+          <th>Consistency</th>
+          <th>Complexity</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--blue)">REST/HTTP</td>
+          <td class="bad">Tight (temporal)</td>
+          <td class="mid">Low-Med</td>
+          <td class="mid">Medium</td>
+          <td class="good">Strong</td>
+          <td class="good">Low</td>
+          <td>Public APIs, CRUD</td>
+        </tr>
+        <tr>
+          <td style="color:var(--purple)">gRPC</td>
+          <td class="bad">Tight (temporal)</td>
+          <td class="good">Very Low</td>
+          <td class="good">Very High</td>
+          <td class="good">Strong</td>
+          <td class="mid">Medium</td>
+          <td>Internal high-perf</td>
+        </tr>
+        <tr>
+          <td style="color:var(--cyan)">GraphQL</td>
+          <td class="bad">Tight (temporal)</td>
+          <td class="mid">Low-Med</td>
+          <td class="mid">Medium</td>
+          <td class="good">Strong</td>
+          <td class="bad">High</td>
+          <td>BFF, complex queries</td>
+        </tr>
+        <tr>
+          <td style="color:var(--green)">WebSocket</td>
+          <td class="mid">Connection-coupled</td>
+          <td class="good">Very Low</td>
+          <td class="good">High</td>
+          <td class="good">Strong</td>
+          <td class="mid">Medium</td>
+          <td>Real-time, streaming</td>
+        </tr>
+        <tr>
+          <td style="color:var(--orange)">Kafka</td>
+          <td class="good">Loose</td>
+          <td class="mid">Med (~10ms)</td>
+          <td class="good">Millions/s</td>
+          <td class="bad">Eventual</td>
+          <td class="bad">High</td>
+          <td>Event streaming, audit</td>
+        </tr>
+        <tr>
+          <td style="color:var(--orange)">RabbitMQ</td>
+          <td class="good">Loose</td>
+          <td class="good">Low</td>
+          <td class="mid">High</td>
+          <td class="bad">Eventual</td>
+          <td class="mid">Medium</td>
+          <td>Task queues, routing</td>
+        </tr>
+        <tr>
+          <td style="color:var(--orange)">SQS/SNS</td>
+          <td class="good">Loose</td>
+          <td class="mid">Med</td>
+          <td class="mid">High</td>
+          <td class="bad">Eventual</td>
+          <td class="good">Low (managed)</td>
+          <td>Cloud-native, simple</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Final golden rules -->
+  <div class="grid-2">
+    <div class="highlight-box green">
+      <div class="hb-title">✅ Golden Rules</div>
+      <div class="hb-body">
+        • Default to async — opt into sync when needed<br>
+        • Design for failure — every call WILL fail eventually<br>
+        • Make consumers idempotent — messages deliver at-least-once<br>
+        • Always set timeouts — everywhere, no exceptions<br>
+        • Propagate correlation IDs — through every call and message<br>
+        • Use the Outbox pattern — never dual-write without it<br>
+        • One database per service — no shared DB between services<br>
+        • Version your events — schemas evolve over time
+      </div>
+    </div>
+    <div class="highlight-box orange">
+      <div class="hb-title">❌ Anti-Patterns</div>
+      <div class="hb-body">
+        • Shared database between services (tight coupling)<br>
+        • Synchronous chain of 5+ service calls (latency cascade)<br>
+        • No circuit breakers (cascade failures)<br>
+        • Unbounded retry loops (amplification storms)<br>
+        • 2-Phase Commit across services (distributed lock hell)<br>
+        • Fat event payloads with full objects (coupling + size)<br>
+        • Ignoring message ordering requirements<br>
+        • Service mesh from day one (premature complexity)
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// Accordion toggle
+document.querySelectorAll('.acc-head').forEach(head => {
+  head.addEventListener('click', () => {
+    head.parentElement.classList.toggle('open');
+  });
+});
+
+// Intersection Observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.card, .obs-layer, .acc-item').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(16px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+
+// Nav active state
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+const mainObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.style.color = '');
+      const active = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+      if (active) {
+        active.style.color = 'var(--blue)';
+        active.style.borderColor = 'var(--blue)';
+      }
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => mainObserver.observe(s));
+</script>
+</body>
+</html>
